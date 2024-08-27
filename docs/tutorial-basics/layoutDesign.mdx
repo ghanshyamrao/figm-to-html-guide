@@ -1,0 +1,38 @@
+---
+sidebar_position: 1
+title: Layout Design
+description: A guide to creating accessible and visually appealing web layouts with grid sizes and container widths, including a live grid calculator.
+slug: /layout-design
+---
+
+# Layout Design
+
+Creating a web layout that is accessible, visually appealing, and responsive is essential. This guide will help you determine grid sizes and maximum container widths using Figma as your design reference.
+
+## Steps to Determine Grid Size and Container Width
+
+Follow these easy steps:
+
+1. **Get the Canvas Size from Figma**: Find the width of your design canvas in Figma.
+2. **Choose the Number of Grids**: Common choices are 12 or 16 grids.
+3. **Calculate Grid Size**: Divide the canvas width by the number of grids.
+4. **Set Maximum Container Size**: Use the grid size to determine the maximum width for your content.
+
+### Example Calculation
+
+Let's say your canvas size is 1440px and you want to use 12 grids:
+
+- **Canvas Size**: 1440px
+- **Number of Grids**: 12
+
+To calculate the grid size:
+
+```bash
+Grid Size = Canvas Width / Number of Grids
+Grid Size = 1440px / 12 = 120px
+
+```
+# Grid Calculator
+import GridCalculator from '../codefiles/GridCalculator';
+
+<GridCalculator />

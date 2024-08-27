@@ -1,0 +1,38 @@
+/* FontUnitsExample.css */
+
+.font-units-example {
+    padding: 20px;
+  }
+  
+  h2 {
+    font-size: 1.5rem; /* Font size in rem units */
+  }
+  
+  p {
+    margin: 10px 0;
+  }
+  
+  .font-point {
+    font-size: 16pt; /* Font size in points */
+  }
+  
+  .font-pixel {
+    font-size: 16px; /* Font size in pixels */
+  }
+  
+  .font-em {
+    font-size: 2em; /* Font size in em units */
+  }
+  
+  .font-rem {
+    font-size: 2rem; /* Font size in rem units */
+  }
+  
+  .font-vw {
+    font-size: 4vw; /* Font size in viewport width units */
+  }
+  
+  .font-vh {
+    font-size: 4vh; /* Font size in viewport height units */
+  }
+  
