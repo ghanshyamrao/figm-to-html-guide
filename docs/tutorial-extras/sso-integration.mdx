@@ -1,0 +1,209 @@
+# SSO Integration Guide for React Applications
+
+This guide covers the integration of Single Sign-On (SSO) for both Microsoft Azure AD and Google using React libraries.
+
+## Table of Contents
+1. [Installation](#1-installation)
+2. [Microsoft Azure AD Integration](#2-microsoft-azure-ad-integration)
+   - [Registering an App on Azure AD](#21-registering-an-app-on-azure-ad)
+   - [Configuring MSAL React](#22-configuring-msal-react)
+3. [Google OAuth Integration](#3-google-oauth-integration)
+   - [Registering an App on Google Cloud](#31-registering-an-app-on-google-cloud)
+   - [Configuring Google OAuth for React](#32-configuring-google-oauth-for-react)
+4. [Implementing SSO in Your React App](#4-implementing-sso-in-your-react-app)
+5. [Best Practices and Security Considerations](#5-best-practices-and-security-considerations)
+
+## 1. Installation
+
+First, install the required packages:
+
+```bash
+npm i @azure/msal-react @azure/msal-browser
+npm i @react-oauth/google
+```
+
+## 2. Microsoft Azure AD Integration
+
+### 2.1 Registering an App on Azure AD
+
+1. Sign in to the [Azure Portal](https://portal.azure.com/).
+2. Navigate to "Azure Active Directory" > "App registrations" > "New registration".
+3. Provide a name for your application.
+4. Select the supported account types (single tenant or multi-tenant).
+5. Set the redirect URI (e.g., http://localhost:3000 for development).
+6. Click "Register".
+
+<!-- ![Azure AD App Registration](/placeholder.svg?height=300&width=500) -->
+
+7. Note down the "Application (client) ID" and "Directory (tenant) ID".
+8. Go to "Certificates & secrets" and create a new client secret. Save this secret securely.
+
+### 2.2 Configuring MSAL React
+
+Create a configuration file, e.g., `msalConfig.js`:
+
+```javascript
+import { Configuration, LogLevel } from "@azure/msal-browser";
+
+export const msalConfig = {
+  auth: {
+    clientId: "YOUR_CLIENT_ID",
+    authority: "https://login.microsoftonline.com/YOUR_TENANT_ID",
+    redirectUri: "http://localhost:3000",
+  },
+  cache: {
+    cacheLocation: "sessionStorage",
+    storeAuthStateInCookie: false,
+  },
+  system: {
+    loggerOptions: {
+      loggerCallback: (level, message, containsPii) => {
+        if (containsPii) {
+          return;
+        }
+        switch (level) {
+          case LogLevel.Error:
+            console.error(message);
+            return;
+          case LogLevel.Info:
+            console.info(message);
+            return;
+          case LogLevel.Verbose:
+            console.debug(message);
+            return;
+          case LogLevel.Warning:
+            console.warn(message);
+            return;
+        }
+      },
+    },
+  },
+};
+
+export const loginRequest = {
+  scopes: ["User.Read"],
+};
+```
+
+## 3. Google OAuth Integration
+
+### 3.1 Registering an App on Google Cloud
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
+2. Create a new project or select an existing one.
+3. Navigate to "APIs & Services" > "Credentials".
+4. Click "Create Credentials" > "OAuth client ID".
+5. Select "Web application" as the application type.
+6. Set the authorized JavaScript origins (e.g., http://localhost:3000 for development).
+7. Set the authorized redirect URIs.
+8. Click "Create".
+
+<!-- ![Google Cloud OAuth Setup](/placeholder.svg?height=300&width=500) -->
+
+9. Note down the "Client ID" and "Client Secret".
+
+### 3.2 Configuring Google OAuth for React
+
+No additional configuration file is needed for Google OAuth. You'll use the Client ID directly in your React components.
+
+## 4. Implementing SSO in Your React App
+
+Here's an example of how to implement SSO with both Microsoft and Google in your React application:
+
+```jsx
+import React from 'react';
+import { MsalProvider, useMsal, useIsAuthenticated } from "@azure/msal-react";
+import { PublicClientApplication } from "@azure/msal-browser";
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { msalConfig, loginRequest } from './msalConfig';
+
+const msalInstance = new PublicClientApplication(msalConfig);
+
+function App() {
+  return (
+    <MsalProvider instance={msalInstance}>
+      <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID">
+        <div className="App">
+          <h1>SSO Integration Example</h1>
+          <MicrosoftLogin />
+          <GoogleLoginButton />
+        </div>
+      </GoogleOAuthProvider>
+    </MsalProvider>
+  );
+}
+
+function MicrosoftLogin() {
+  const { instance, accounts } = useMsal();
+  const isAuthenticated = useIsAuthenticated();
+
+  const handleLogin = () => {
+    instance.loginPopup(loginRequest).catch(e => {
+      console.error(e);
+    });
+  };
+
+  const handleLogout = () => {
+    instance.logoutPopup().catch(e => {
+      console.error(e);
+    });
+  };
+
+  return (
+    <div>
+      {isAuthenticated ? (
+        <div>
+          <p>Welcome, {accounts[0]?.name}</p>
+          <button onClick={handleLogout}>Logout</button>
+        </div>
+      ) : (
+        <button onClick={handleLogin}>Login with Microsoft</button>
+      )}
+    </div>
+  );
+}
+
+function GoogleLoginButton() {
+  const handleSuccess = (credentialResponse) => {
+    console.log(credentialResponse);
+    // Handle successful login
+  };
+
+  const handleError = () => {
+    console.log('Login Failed');
+  };
+
+  return (
+    <GoogleLogin
+      onSuccess={handleSuccess}
+      onError={handleError}
+    />
+  );
+}
+
+export default App;
+```
+
+## 5. Best Practices and Security Considerations
+
+1. **Secure Storage**: Never store tokens or sensitive information in local storage. Use secure storage methods.
+
+2. **HTTPS**: Always use HTTPS in production to encrypt data in transit.
+
+3. **Scope Limitation**: Request only the scopes your application needs.
+
+4. **Token Validation**: Always validate tokens on your backend before granting access to protected resources.
+
+5. **Error Handling**: Implement proper error handling for authentication failures.
+
+6. **Logout**: Implement a proper logout mechanism that clears all session data and revokes tokens.
+
+7. **Regular Updates**: Keep your libraries and dependencies up to date to ensure you have the latest security patches.
+
+8. **Environment Variables**: Use environment variables to store sensitive information like Client IDs and Secrets, especially in production.
+
+Remember to replace `YOUR_CLIENT_ID`, `YOUR_TENANT_ID`, and `YOUR_GOOGLE_CLIENT_ID` with your actual values from Azure AD and Google Cloud Console respectively.
+
+For more detailed information, refer to the official documentation:
+- [MSAL React](https://github.com/AzureAD/microsoft-authentication-library-for-js/tree/dev/lib/msal-react)
+- [@react-oauth/google](https://github.com/MomenSherif/react-oauth)
