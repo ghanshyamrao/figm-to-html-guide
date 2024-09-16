@@ -182,10 +182,48 @@ When pushing to a repository for the first time, use your GitHub username and th
   git push origin main
   ```
 
+## 8. Troubleshooting
+
+### SSH Issues
+[Content remains unchanged]
+
+### Git Push Errors
+[Previous content remains unchanged]
+
+#### Incorrect Remote URL with Personal Access Token
+If you're encountering an error due to an improperly formatted URL when pushing to GitHub using a Personal Access Token, follow these steps:
+
+1. Check your current remote URL:
+   ```bash
+   git remote -v
+   ```
+   You might see output like this:
+   ```
+   origin  https://<token>github.com/username/repository.git (fetch)
+   origin  https://<token>github.com/username/repository.git (push)
+   ```
+
+2. If the token and the GitHub URL are merged incorrectly, correct the remote URL using this format:
+   ```bash
+   git remote set-url origin https://<token>@github.com/<username>/<repository>.git
+   ```
+   For example:
+   ```bash
+   git remote set-url origin https://ghp_1234567890abcdef@github.com/username/repository.git
+   ```
+
+3. After updating the remote URL, try pushing your changes again:
+   ```bash
+   git push origin main
+   ```
+
+### GitHub CLI Authentication Issues
+[Content remains unchanged]  
+
 ### GitHub CLI Authentication Issues
 - Run `gh auth status` to check your authentication status
 - If issues persist, try `gh auth logout` and then `gh auth login` again
 
-Remember to replace 'username', 'repository', and 'branch-name' with your actual GitHub username, repository name, and branch name where applicable.
+Remember to replace 'username', 'repository','token' and 'branch-name' with your actual GitHub username, repository name, and branch name where applicable.
 
 For more detailed information and advanced usage, refer to the [official GitHub documentation](https://docs.github.com/).
