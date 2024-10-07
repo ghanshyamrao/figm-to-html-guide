@@ -3,6 +3,7 @@
 This guide covers the integration of Single Sign-On (SSO) for both Microsoft Azure AD and Google using React libraries.
 
 ## Table of Contents
+
 1. [Installation](#1-installation)
 2. [Microsoft Azure AD Integration](#2-microsoft-azure-ad-integration)
    - [Registering an App on Azure AD](#21-registering-an-app-on-azure-ad)
@@ -10,8 +11,14 @@ This guide covers the integration of Single Sign-On (SSO) for both Microsoft Azu
 3. [Google OAuth Integration](#3-google-oauth-integration)
    - [Registering an App on Google Cloud](#31-registering-an-app-on-google-cloud)
    - [Configuring Google OAuth for React](#32-configuring-google-oauth-for-react)
-4. [Implementing SSO in Your React App](#4-implementing-sso-in-your-react-app)
-5. [Best Practices and Security Considerations](#5-best-practices-and-security-considerations)
+4. [Facebook oauth Integration](#4-facebook-oauth-integration)
+   - [Registering an App on Facebook Meta Center](#31-registering-an-app-on-facebook-meta-center)
+   - [Configuring facebook OAuth for React](#32-configuring-facebook-oauth-for-react)
+5. [Twitter oauth Integration](#5-twitter-oauth-integration)
+   - [Registering an App on Twitter](#31-registering-an-app-on-twitter-app-registration)
+   - [Configuring Twitter OAuth for React](#32-configuring-twitter-oauth-for-react)
+6. [Implementing SSO in Your React App](#4-implementing-sso-in-your-react-app)
+7. [Best Practices and Security Considerations](#5-best-practices-and-security-considerations)
 
 ## 1. Installation
 
@@ -20,6 +27,7 @@ First, install the required packages:
 ```bash
 npm i @azure/msal-react @azure/msal-browser
 npm i @react-oauth/google
+npm i reactjs-social-login
 ```
 
 ## 2. Microsoft Azure AD Integration
@@ -106,16 +114,188 @@ export const loginRequest = {
 
 No additional configuration file is needed for Google OAuth. You'll use the Client ID directly in your React components.
 
-## 4. Implementing SSO in Your React App
+## 4. Facebook oauth Integration
+
+### 4.1 Registering an App on Facebook Meta Center
+
+- Go to the [Meta Developer Portal](https://developers.facebook.com/apps/1255648915444816/settings/basic/).
+- Click on "Create App" in the top right corner.
+- Choose the type of app you want to create (e.g., Business, Consumer, etc.).
+- Provide the required details like the app name and contact email.
+- After creating the app, navigate to **Settings > Basic**.
+- Copy the **App ID** and **App Secret** from this page, as you'll need them for your React application.
+- Under **Add a Platform**, select **Web** and enter your website’s URL (e.g., http://localhost:3000 for development).
+- Set up your OAuth redirect URIs under the **Facebook Login** settings.
+- Save the changes, and your app should be ready to use for Facebook SSO.
+
+10. Note down the "Client ID" and "Client Secret".
+
+### 4.2 Configuring facebook OAuth for React
+Here's an example of how to implement SSO Twitter Login in your React application:
+
+```jsx
+import React, { useState } from "react";
+import { LoginSocialFacebook } from "reactjs-social-login";
+import { Facebook, LucideFacebook } from "lucide-react";
+
+interface FacebookUser {
+  name: string;
+  email: string;
+  picture: {
+    data: {
+      url: string;
+    };
+  };
+}
+
+const FacebookLogin: React.FC = () => {
+  const [user, setUser] = useState<FacebookUser | null>(null);
+
+  const handleLoginSuccess = (response: any) => {
+    console.log("Facebook login success:", response);
+    setUser(response.data);
+  };
+
+  const handleLoginFailure = (error: any) => {
+    console.error("Facebook login failed:", error);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+  };
+
+  return (
+    <div>
+      {!user ? (
+        <LoginSocialFacebook
+          appId={process.env.REACT_APP_FACEBOOK_APP_ID || ""}
+          onResolve={handleLoginSuccess}
+          onReject={handleLoginFailure}
+        >
+          <button className="login-button login-button--facebook">
+            <Facebook color="white" size={24} />
+            <p className="ml-4">Login with Facebook</p>
+          </button>
+        </LoginSocialFacebook>
+      ) : (
+        <div >
+          <img
+            src={user.picture.data.url}
+            alt={user.name}
+            style={styles.profileImage}
+          />
+          <h2 >{user.name}</h2>
+          <p >{user.email}</p>
+          <button onClick={handleLogout} >
+            Logout
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default FacebookLogin;
+
+
+```
+
+
+## 5. Twitter oauth Integration
+
+### 5.1 Registering an App on Twitter
+
+Go to the [Twitter Developer Portal](https://developer.twitter.com/en/portal/dashboard).
+- Click on **Create an app** in the top right corner.
+- Fill in the required information:
+  - **App name**: Choose a unique name for your app.
+  - **Application description**: Provide a brief description of your app.
+  - **Website URL**: Enter your website’s URL (e.g., http://localhost:3000 for development).
+- Accept the Developer Agreement.
+- Click **Create** to finalize the app creation.
+- After creating the app, navigate to the **Keys and tokens** tab.
+- Copy the **API Key** and **API Secret Key**, as you’ll need them for your React application.
+- Scroll down to the **OAuth 2.0** section and click **Generate** to create the Bearer token.
+- Under the **User authentication settings**, configure the callback URLs (e.g., http://localhost:3000 for local development).
+- Save the changes, and your app should be ready to use for Twitter SSO.
+
+### 5.2 Configuring Twitter OAuth for React
+Here's an example of how to implement SSO Facebook Login in your React application:
+
+```jsx
+import { Twitter } from "lucide-react";
+import React, { useState } from "react";
+import { LoginSocialTwitter } from "reactjs-social-login";
+
+interface TwitterUser {
+  name: string;
+  email: string;
+  profile_image_url: string;
+}
+
+const TwitterLogin: React.FC = () => {
+  const [user, setUser] = useState<TwitterUser | null>(null);
+
+  const handleLoginSuccess = async (response: any) => {
+    setUser(response.data);
+    console.log("Twitter login success:", response);
+  };
+
+  const handleLoginFailure = (error: any) => {
+    console.error("Twitter login failed:", error);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+  };
+
+  return (
+    <div>
+      {!user ? (
+        <LoginSocialTwitter
+          client_id={process.env.REACT_APP_TWITTER_V2_APP_KEY || ""}
+          redirect_uri={window.location.origin}
+          onResolve={handleLoginSuccess}
+          onReject={handleLoginFailure}
+        >
+          <button className="login-button login-button--twitter">
+            <Twitter color="white" size={24} />
+            <p className="ml-4"> Login with Twitter</p>
+          </button>
+        </LoginSocialTwitter>
+      ) : (
+        <div>
+          <img
+            src={user?.profile_image_url}
+            alt={user?.name}
+            style={styles.profileImage}
+          />
+          <h2 >{user?.name}</h2>
+          <p >{user?.email}</p>
+          <button onClick={handleLogout} >
+            Logout
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+export default TwitterLogin;
+
+```
+
+## 6. Implementing SSO in Your React App
 
 Here's an example of how to implement SSO with both Microsoft and Google in your React application:
 
 ```jsx
-import React from 'react';
+import React from "react";
 import { MsalProvider, useMsal, useIsAuthenticated } from "@azure/msal-react";
 import { PublicClientApplication } from "@azure/msal-browser";
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import { msalConfig, loginRequest } from './msalConfig';
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import { msalConfig, loginRequest } from "./msalConfig";
 
 const msalInstance = new PublicClientApplication(msalConfig);
 
@@ -138,13 +318,13 @@ function MicrosoftLogin() {
   const isAuthenticated = useIsAuthenticated();
 
   const handleLogin = () => {
-    instance.loginPopup(loginRequest).catch(e => {
+    instance.loginPopup(loginRequest).catch((e) => {
       console.error(e);
     });
   };
 
   const handleLogout = () => {
-    instance.logoutPopup().catch(e => {
+    instance.logoutPopup().catch((e) => {
       console.error(e);
     });
   };
@@ -170,21 +350,16 @@ function GoogleLoginButton() {
   };
 
   const handleError = () => {
-    console.log('Login Failed');
+    console.log("Login Failed");
   };
 
-  return (
-    <GoogleLogin
-      onSuccess={handleSuccess}
-      onError={handleError}
-    />
-  );
+  return <GoogleLogin onSuccess={handleSuccess} onError={handleError} />;
 }
 
 export default App;
 ```
 
-## 5. Best Practices and Security Considerations
+## 7. Best Practices and Security Considerations
 
 1. **Secure Storage**: Never store tokens or sensitive information in local storage. Use secure storage methods.
 
@@ -205,5 +380,7 @@ export default App;
 Remember to replace `YOUR_CLIENT_ID`, `YOUR_TENANT_ID`, and `YOUR_GOOGLE_CLIENT_ID` with your actual values from Azure AD and Google Cloud Console respectively.
 
 For more detailed information, refer to the official documentation:
+
 - [MSAL React](https://github.com/AzureAD/microsoft-authentication-library-for-js/tree/dev/lib/msal-react)
 - [@react-oauth/google](https://github.com/MomenSherif/react-oauth)
+- [ reactjs-social-login](https://github.com/cuongdevjs/reactjs-social-login/blob/master/example/src/App.tsx)
